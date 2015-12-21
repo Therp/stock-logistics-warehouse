@@ -21,18 +21,12 @@
 
 {'name': 'Stock Location Ownership',
  'version': '0.1',
- 'author': 'Camptocamp',
+ 'author': "Camptocamp,Odoo Community Association (OCA)",
  'category': 'Warehouse',
  'license': 'AGPL-3',
  'complexity': 'normal',
  'images': [],
  'website': "http://www.camptocamp.com",
- 'description': """
-Stock Location Ownership
-========================
-
-Adds an ownership on the stock locations
-""",
  'depends': ['stock',
              ],
  'demo': [],
