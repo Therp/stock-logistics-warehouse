@@ -26,6 +26,7 @@ class StockQuant(models.Model):
             adjustment = rec.current_inventory_id
             moves = record_moves.search(
                 [
+                    ("is_inventory", "=", True),
                     ("product_id", "=", rec.product_id.id),
                     ("lot_id", "=", rec.lot_id.id),
                     "|",
