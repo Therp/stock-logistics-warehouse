@@ -22,18 +22,28 @@ class StockQuant(models.Model):
         res = super()._apply_inventory()
         for rec in self:
             record_moves = self.env["stock.move.line"]
-            moves = record_moves.search(
-                [
-                    ("product_id", "=", rec.product_id.id),
-                    ("lot_id", "=", rec.lot_id.id),
-                    "|",
-                    ("location_id", "=", rec.location_id.id),
-                    ("location_dest_id", "=", rec.location_id.id),
-                ]
-                + ([("company_id", "=", rec.company_id.id)] if rec.company_id else []),
-                order="create_date asc",
+            inv_id = rec.current_inventory_id.id if rec.current_inventory_id else False
+            domain = [
+                ("is_inventory", "=", True),  # only inventory lines
+                ("product_id", "=", rec.product_id.id),
+                ("lot_id", "=", rec.lot_id.id or False),
+                "|",
+                ("location_id", "=", rec.location_id.id),
+                ("location_dest_id", "=", rec.location_id.id),
+            ]
+            if rec.company_id:
+                domain.append(("company_id", "=", rec.company_id.id))
+            if inv_id:
+                domain.append(("inventory_adjustment_id", "=", inv_id))
+            move = record_moves.search(
+                domain, order="create_date desc, id desc", limit=1
             )
-            move = moves[len(moves) - 1]
+            if not move and inv_id:
+                # Error out, if there is an inventory
+                raise ValueError("No move lines have been created")
+            if not move:
+                # No inventory id and nothing found, write nothing
+                continue
             move.write(
                 {
                     "line_accuracy": accuracy_dict[rec.id],
